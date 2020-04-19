@@ -1,0 +1,2 @@
+FLASK_APP=deepdream.py
+FLASK_ENV=development
