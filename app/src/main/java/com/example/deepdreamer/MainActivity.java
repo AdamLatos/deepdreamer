@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     Button pickPhotoButton;
     Button sendButton;
     ImageView imageView;
+    WebView webView;
     TextView text;
     ProgressBar progressBar;
     public static final String URL = "http://10.0.2.2:5000/";
@@ -60,10 +62,12 @@ public class MainActivity extends AppCompatActivity {
         pickPhotoButton = findViewById(R.id.pickPhotoButton);
         sendButton = findViewById(R.id.sendButton);
         imageView = findViewById(R.id.imageView);
+        webView = findViewById(R.id.webView);
         text = findViewById(R.id.text);
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
         pickPhotoButton.setEnabled(false);
+        imageView.setVisibility(View.GONE);
 
         pickPhotoButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -80,13 +84,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
             } else {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
@@ -128,10 +128,10 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                int ready = 0;
             }
         }
     }
-
 
     public byte[] getBytes(InputStream is) throws IOException {
         ByteArrayOutputStream byteBuff = new ByteArrayOutputStream();
@@ -160,35 +160,71 @@ public class MainActivity extends AppCompatActivity {
 
                 progressBar.setVisibility(View.GONE);
 
+
                 if (response.isSuccessful()) {
-
+                    Log.e("Success", new Gson().toJson(response.body()));
                     MyResponse responseBody = response.body();
-                    text.setText(responseBody.getMessage());
-                    //mBtImageShow.setVisibility(View.VISIBLE);
-                    //mImageUrl = URL + responseBody.getPath();
-                    //Snackbar.make(findViewById(R.id.content), responseBody.getMessage(),Snackbar.LENGTH_SHORT).show();
-
+                    Log.e("Success", response.body().path);
+                    webView.getSettings().setBuiltInZoomControls(true);
+                    webView.loadUrl(URL + response.body().path);
+                    imageView.setVisibility(View.GONE);
+                    webView.setVisibility(View.VISIBLE);
                 } else {
-
+                    Log.e("unsSuccess", new Gson().toJson(response.errorBody()));
                     ResponseBody errorBody = response.errorBody();
                     Gson gson = new Gson();
                     try {
                         Log.d(TAG, errorBody.string());
                         MyResponse errorResponse = gson.fromJson(errorBody.string(), MyResponse.class);
-                        //Snackbar.make(findViewById(R.id.content), errorResponse.getMessage(),Snackbar.LENGTH_SHORT).show();
-
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
             }
-
             @Override
             public void onFailure(Call<MyResponse> call, Throwable t) {
-
                 progressBar.setVisibility(View.GONE);
                 Log.d(TAG, "onFailure: "+t.getLocalizedMessage());
             }
         });
+    }
+
+    private void showImage() {
+//        Retrofit retrofit = new Retrofit.Builder()
+//                .baseUrl(URL)
+//                .addConverterFactory(GsonConverterFactory.create())
+//                .build();
+//        RetrofitInterface retrofitInterface = retrofit.create(RetrofitInterface.class);
+//        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), imageBytes);
+//        MultipartBody.Part body = MultipartBody.Part.createFormData("image", "image.jpg", requestFile);
+//        Call<MyResponse> call = retrofitInterface.uploadImage(body);
+//        progressBar.setVisibility(View.VISIBLE);
+//        call.enqueue(new Callback<MyResponse>() {
+//            @Override
+//            public void onResponse(Call<MyResponse> call, retrofit2.Response<MyResponse> response) {
+//
+//                progressBar.setVisibility(View.GONE);
+//
+//                if (response.isSuccessful()) {
+//                    MyResponse responseBody = response.body();
+//                    text.setText(responseBody.getMessage());
+//                } else {
+//                    ResponseBody errorBody = response.errorBody();
+//                    Gson gson = new Gson();
+//                    try {
+//                        Log.d(TAG, errorBody.string());
+//                        MyResponse errorResponse = gson.fromJson(errorBody.string(), MyResponse.class);
+//
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//            @Override
+//            public void onFailure(Call<MyResponse> call, Throwable t) {
+//                progressBar.setVisibility(View.GONE);
+//                Log.d(TAG, "onFailure: "+t.getLocalizedMessage());
+//            }
+//        });
     }
 }
