@@ -67,14 +67,14 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
                'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors',
                'teddy bear', 'hair drier', 'toothbrush']
 
+def label_image(image):
+    # Run detection
+    results = model.detect([image], verbose=1)
+
+    # Visualize results
+    r = results[0]
+    visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], class_names, r['scores'])
 
 # Load a random image from the images folder
-file_names = next(os.walk(IMAGE_DIR))[2]
-image = skimage.io.imread(os.path.join(IMAGE_DIR, random.choice(file_names)))
-
-# Run detection
-results = model.detect([image], verbose=1)
-
-# Visualize results
-r = results[0]
-visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], class_names, r['scores'])
+# file_names = next(os.walk(IMAGE_DIR))[2]
+# image = skimage.io.imread(os.path.join(IMAGE_DIR, random.choice(file_names)))
