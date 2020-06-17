@@ -31,9 +31,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -52,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     WebView webView;
     TextView text;
     ProgressBar progressBar;
-    public static final String URL = "http://10.0.2.2:5000/";
+    public static final String URL = "http://ec2-3-83-32-26.compute-1.amazonaws.com:80/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,8 +147,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void uploadImage(byte[] imageBytes) {
+        OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
+                .connectTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
+                .build();
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(URL)
+                .client(okHttpClient)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         RetrofitInterface retrofitInterface = retrofit.create(RetrofitInterface.class);
@@ -166,7 +175,9 @@ public class MainActivity extends AppCompatActivity {
                     MyResponse responseBody = response.body();
                     Log.e("Success", response.body().path);
                     webView.getSettings().setBuiltInZoomControls(true);
-                    webView.loadUrl(URL + response.body().path);
+                    //webView.loadUrl(URL + response.body().path);
+                    System.out.println("XXXXXXXXXX ");
+                    webView.loadUrl(URL + "converted.png");
                     imageView.setVisibility(View.GONE);
                     webView.setVisibility(View.VISIBLE);
                 } else {
